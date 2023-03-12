@@ -1,33 +1,23 @@
 from bs4 import BeautifulSoup
-import categories
 import requests
-from urllib.request import urlopen
-import urllib.parse
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-# VARIABLES
-base_url = 'https://bgfirms.info/категория/'
-reqs = requests.get(base_url)
-soup = BeautifulSoup(reqs.text, 'html.parser')
-count = 0
-category = categories.list_all_categories
+# specify the URL of the page to scrape
+url = 'https://www.business.bg/'
 
-# LOOP OVER ALL URLS
-urls = []
+# send a request to the website and get the HTML content
+response = requests.get(url, verify=False)
 
-for link in category:
-    url = f'{base_url}{category[count]}'
-    count += 1
+# create a BeautifulSoup object to parse the HTML content
+soup = BeautifulSoup(response.content, 'html.parser')
 
-    for inner_link in soup.find_all('a'):
-        page = inner_link.get('href')
-        if  page != '#' or  page != '/за-нас':
-        
-            
-            # print("https://bgfirms.info", end='')
-
-            # url_encoded = urllib.parse.quote(url, safe='')
-            # next_page = urlopen(url_encoded)
-            # html_bytes = next_page.read()
-            # html = html_bytes.decode("utf-8", errors="ignore")
-
-            print(page)
+# loop through each link in the page and print its href attribute
+for link in soup.find_all('a'):
+    current_url = link.get('href')
+    if current_url != 'https://www.business.bg' and current_url != '#' and current_url != '#/':
+        f = open("./links.txt", "a")
+        f.write(link.get('href'))
+        f.write('\n')
+        f.close()
+        print(link.get('href'))
