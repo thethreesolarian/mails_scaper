@@ -6,36 +6,38 @@ import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 count = 0
 
+def write_links_to_file():
+    links_file = open("./links.txt", "a")
+    links_file.write(category_link)
+    links_file.write('\n')
+    links_file.close()
+
+
 # LOOP OVER EACH CATEGORY
 for category_link in categories.list_all_categories:
 
-    plc_holder_link = category_link.format('', None)
-    plc_response = requests.get(plc_holder_link, verify=False, allow_redirects=False)
-    soup = BeautifulSoup(plc_response.content, 'html.parser')
-    
-    while plc_response.status_code == 200:
-        plc_holder_link = category_link.format(count)
-        plc_response = requests.get(plc_holder_link, verify=False, allow_redirects=False)
+    if count < 1:
         
-        if plc_response.status_code != 200:
-            if count < 1:
-                print(f'Status code: {plc_response.status_code} --> {category_link}'.format('', count))
-            else:
-                print(f'Status code: {plc_response.status_code} --> {category_link}'.format('s-', count))
-                break
+        temp_link = category_link
+        category_link = category_link.replace('*/', '')
+        print(category_link)
+        write_links_to_file()
         
-        print(f'Status code: {plc_response.status_code} --> {category_link}'.format(count))
+        response = requests.get(category_link, verify=False, allow_redirects=True)
+        soup = BeautifulSoup(response.content, 'html.parser')
         count += 1
+
+        while response.status_code == 200:
+            category_link = temp_link
+            category_link = category_link.replace('*/', f's-{count}/')
+            response = requests.get(category_link, verify=False, allow_redirects=False)
+            
+            write_links_to_file()
+            print(category_link)
+            count += 1
+            
+    # if count > 0:
+    #     category_link = category_link.replace('*/', f's-{count}/')
     
-    count = 1
-        
-    # for item in categories.list_all_categories:
-        # print(f'{item}'.format(count))
-    # if 'https://www.business.bg/o' in 
-    # LOOP OVER EACH LINK IN EACH CATEGORY
-    # for link in soup.find_all('a'):
-    #     f = open("./links.txt", "a")
-    #     f.write(link.get('href'))
-    #     f.write('\n')
-    #     f.close()
-    #     print(link.get('href'))
+    count = 0
+
