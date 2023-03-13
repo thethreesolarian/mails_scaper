@@ -1,10 +1,7 @@
-from urllib.request import urlopen
+import categories
 
-url = "http://olympus.realpython.org/profiles/aphrodite"
+count = 0
 
-nex_page = urlopen(url)
-
-html_bytes = nex_page.read()
-html = html_bytes.decode("utf-8")
-
-print(html)
+for item in categories.list_all_categories:
+    print(f'{item}%s'.format(5))
+    count += 1
