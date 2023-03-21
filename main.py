@@ -8,10 +8,9 @@ count = 0
 
 def write_links_to_file():
     links_file = open("./links.txt", "a")
-    links_file.write(category_link)
-    links_file.write('\n')
+    links_file.write(f'{category_link}\n')
+    # links_file.write('\n')
     links_file.close()
-
 
 # LOOP OVER EACH CATEGORY
 for category_link in categories.list_all_categories:
@@ -21,23 +20,24 @@ for category_link in categories.list_all_categories:
         temp_link = category_link
         category_link = category_link.replace('*/', '')
         print(category_link)
-        write_links_to_file()
+        # write_links_to_file()
         
-        response = requests.get(category_link, verify=False, allow_redirects=True)
+        response = requests.get(category_link, verify=False, allow_redirects=False)
         soup = BeautifulSoup(response.content, 'html.parser')
-        count += 1
+        title_end_index = soup.text
+        title_end_index = title_end_index.index(' |')
+        # print(title_end_index)
+        print(soup.text[6:title_end_index])
 
         while response.status_code == 200:
+            count += 1
             category_link = temp_link
             category_link = category_link.replace('*/', f's-{count}/')
             response = requests.get(category_link, verify=False, allow_redirects=False)
             
-            write_links_to_file()
-            print(category_link)
-            count += 1
-            
-    # if count > 0:
-    #     category_link = category_link.replace('*/', f's-{count}/')
+            if response.status_code == 200:
+                # write_links_to_file()
+                print(soup.content)
+                print(category_link)
     
     count = 0
-
