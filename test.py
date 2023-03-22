@@ -43,7 +43,7 @@ for title in re.finditer('<meta itemprop="name" content="', text):
     describtion_start = text.find('firm_text', phone_end)
     describtion_start += 11
     describtion_end = text.find('<', describtion_start)
-    describtion_end -= 20
+    describtion_end -= 25
     
     # Create variables to hole the above data
     company_name = text[title_start:title_end]

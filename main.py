@@ -78,8 +78,6 @@ for category_link in categories.list_all_categories:
             response = requests.get(category_link, verify=False, allow_redirects=False)
             text = BeautifulSoup(response.content, 'html.parser')
             
-            get_data(link=category_link)
-
             while response.status_code == 200:
                 s_count += 1
                 category_link = temp_link
