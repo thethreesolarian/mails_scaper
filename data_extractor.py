@@ -1,21 +1,37 @@
 from beautifultable import BeautifulTable
 from bs4 import BeautifulSoup
 import categories
+import mysql.connector
 import re
 import requests
 import urllib3
 
-# Write the result to a log txt file
-def write_links_to_file():
-    links_file = open("./structured.txt", "a")
-    links_file.write(f'{table}')
-    links_file.close()
-    
+# Write the result into table in file
 def write_data_into_table():
     links_file = open("./structured.txt", "a")
     links_file.write(f'{table}')
     # links_file.write('\n')
     links_file.close()
+    
+ # Erase the structured file content
+def erase_structured():
+    links_file = open("./structured.txt", "r+")
+    links_file.truncate(0)
+
+# Databse
+data = mysql.connector.connect(
+  host="localhost",
+  user="data_any",
+  password="data_123!@#",
+  database="mails",
+  port = "41063"
+)
+
+def sql_execute():
+    cursor = data.cursor()
+    cursor.execute(sql)
+    data.commit()
+    cursor.close()
 
 # Handling SSL and verification errors
 ###################################
@@ -25,35 +41,47 @@ response = requests.get(url, verify=False)
 ###################################
 
 s_count = 0
+line = 0
 
 # Creating a table to hold the data
 ###################################
 table = BeautifulTable()
-table.columns.header = (["Company name", "Company e-mail", "Company phone", "Company describtion"])
-table.columns.width = 30
+table.columns.header = (["№", "Category", "Company name", "Company e-mail", "Company phone", "Company describtion"])
+table.columns.width = [10, 25, 25, 25, 15, 80]
 ###################################
 
 for category in categories.list_all_categories:
     
+    # Prepare the initial link for the category
     temp_link = category
     category = category.replace('*/', '')
     link = category
-    print(link)
+    response = requests.get(category, verify=False, allow_redirects=False)
     
+    # Loop over each page for a given category    
     while response.status_code == 200:
         if s_count > 0:
             category = temp_link
             category = category.replace('*/', f's-{s_count}/')    
             response = requests.get(category, verify=False, allow_redirects=False)
+            
+            if response.status_code != 200:
+                break
+            
             link = category
         # Get the content of the web page as a string
         response = requests.get(link, verify=False, allow_redirects=False)
         text = BeautifulSoup(response.content, 'html.parser')
         text = str(response.text)
-        
+
         # Goes over each company on the web page and collect:
         for title in re.finditer('<meta itemprop="name" content="', text):
             try:
+                # The category
+                category_start = text.find('"og:title" content="')
+                category_start += 20
+                category_end = text.find('"', category_start)
+
                 # The tile of the firm
                 title_start = title.end()
                 title_end = text.find('"', title_start)
@@ -75,6 +103,7 @@ for category in categories.list_all_categories:
                 describtion_end -= 30
 
                 # Create variables to hole the above data
+                category_name = text[category_start:category_end]
                 company_name = text[title_start:title_end]
                 company_mail = text[mail_start:mail_end].replace('\t', '')
                 company_phone = text[phone_start:phone_end]
@@ -82,14 +111,23 @@ for category in categories.list_all_categories:
                 company_describtion = text[describtion_start:describtion_end].replace('\t', '')
                 company_describtion = company_describtion.replace('\r', '')
                 
-                # Insert it into the table
-                table.rows.append([company_name, company_mail, company_phone, company_describtion])
-                print(company_name)
+                line += 1
+                # Insert it into MySQL table                
+                sql = f'INSERT INTO data(line_number, category_name, company_name, company_mail, company_phone, company_describtion)' \
+                f'VALUES ({line}, \'{category_name}\', \'{company_name}\', \'{company_mail}\', \'{company_phone}\', \'{company_describtion}\')'
+                sql_execute()
+        
             except:
                 print(f'Error occured {company_name}')
-        # print(table)
-        
-        if s_count < 1:
-            write_data_into_table()
+                data.commit()
+        erase_structured()
+        # write_data_into_table()
             
         s_count += 1
+    s_count = 0
+    print(category_name)
+    print(line)
+    print(link)
+write_data_into_table()
+
+    
