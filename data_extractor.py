@@ -6,18 +6,6 @@ import re
 import requests
 import urllib3
 
-# Write the result into table in file
-def write_data_into_table():
-    links_file = open("./structured.txt", "a")
-    links_file.write(f'{table}')
-    # links_file.write('\n')
-    links_file.close()
-    
- # Erase the structured file content
-def erase_structured():
-    links_file = open("./structured.txt", "r+")
-    links_file.truncate(0)
-
 # Databse
 data = mysql.connector.connect(
   host="localhost",
@@ -42,13 +30,6 @@ response = requests.get(url, verify=False)
 
 s_count = 0
 line = 0
-
-# Creating a table to hold the data
-###################################
-table = BeautifulTable()
-table.columns.header = (["№", "Category", "Company name", "Company e-mail", "Company phone", "Company describtion"])
-table.columns.width = [10, 25, 25, 25, 15, 80]
-###################################
 
 for category in categories.list_all_categories:
     
@@ -120,14 +101,11 @@ for category in categories.list_all_categories:
             except:
                 print(f'Error occured {company_name}')
                 data.commit()
-        erase_structured()
-        # write_data_into_table()
             
         s_count += 1
     s_count = 0
     print(category_name)
     print(line)
     print(link)
-write_data_into_table()
 
     
