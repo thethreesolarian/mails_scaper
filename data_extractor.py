@@ -1,25 +1,27 @@
 from beautifultable import BeautifulTable
 from bs4 import BeautifulSoup
 import categories
+import function
 import mysql.connector
+import params
 import re
 import requests
 import urllib3
 
-# Databse
-data = mysql.connector.connect(
-  host="localhost",
-  user="data_any",
-  password="data_123!@#",
-  database="mails",
-  port = "41063"
-)
+# # Databse
+# data = mysql.connector.connect(
+#   host="localhost",
+#   user="data_any",
+#   password="data_123!@#",
+#   database="mails",
+#   port = "41063"
+# )
 
-def sql_execute():
-    cursor = data.cursor()
-    cursor.execute(sql)
-    data.commit()
-    cursor.close()
+# def sql_execute():
+#     cursor = data.cursor()
+#     cursor.execute(sql)
+#     data.commit()
+#     cursor.close()
 
 # Handling SSL and verification errors
 ###################################
@@ -28,30 +30,23 @@ url = categories.list_all_categories[0].replace('/*/', '/')
 response = requests.get(url, verify=False)
 ###################################
 
-s_count = 0
-line = 0
-
+# Loop over all CATEGORIES URLs
 for category in categories.list_all_categories:
+    category_link = function.links(category)
+    function.request_status(category_link)
     
-    # Prepare the initial link for the category
-    temp_link = category
-    category = category.replace('*/', '')
-    link = category
-    response = requests.get(category, verify=False, allow_redirects=False)
-    
-    # Loop over each page for a given category    
+    # Loop over each page for a given category untill face status != 200
     while response.status_code == 200:
-        if s_count > 0:
-            category = temp_link
-            category = category.replace('*/', f's-{s_count}/')    
-            response = requests.get(category, verify=False, allow_redirects=False)
+        if params.s_count > 0:
+            category_link = function.links(category)
+            response = function.request_status(category_link)
             
+            # If the given category_link (URL) returns != 200, go to the main loop
             if response.status_code != 200:
                 break
-            
-            link = category
+        
         # Get the content of the web page as a string
-        response = requests.get(link, verify=False, allow_redirects=False)
+        response = function.request_status(category_link)
         text = BeautifulSoup(response.content, 'html.parser')
         text = str(response.text)
 
@@ -92,20 +87,19 @@ for category in categories.list_all_categories:
                 company_describtion = text[describtion_start:describtion_end].replace('\t', '')
                 company_describtion = company_describtion.replace('\r', '')
                 
-                line += 1
-                # Insert it into MySQL table                
-                sql = f'INSERT INTO data(line_number, category_name, company_name, company_mail, company_phone, company_describtion)' \
-                f'VALUES ({line}, \'{category_name}\', \'{company_name}\', \'{company_mail}\', \'{company_phone}\', \'{company_describtion}\')'
-                sql_execute()
+                params.line += 1
+            #     # Insert it into MySQL table                
+            #     sql = f'INSERT INTO data(params.line_number, category_name, company_name, company_mail, company_phone, company_describtion)' \
+            #     f'VALUES ({params.line}, \'{category_name}\', \'{company_name}\', \'{company_mail}\', \'{company_phone}\', \'{company_describtion}\')'
+            #     sql_execute()
         
             except:
                 print(f'Error occured {company_name}')
-                data.commit()
-            
-        s_count += 1
-    s_count = 0
+            #     data.commit()
+            print(f'{category_link} | {category_name} | {company_name}')
+        params.s_count += 1
+    params.s_count = 0
     print(category_name)
-    print(line)
-    print(link)
+    print(params.line)
 
     
