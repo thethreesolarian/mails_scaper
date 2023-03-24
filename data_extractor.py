@@ -29,7 +29,7 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 url = categories.list_all_categories[0].replace('/*/', '/')
 response = requests.get(url, verify=False)
 ###################################
-
+ 
 # Loop over all CATEGORIES URLs
 for category in categories.list_all_categories:
     category_link = function.links(category)
