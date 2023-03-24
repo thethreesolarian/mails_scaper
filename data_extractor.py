@@ -88,15 +88,18 @@ for category in categories.list_all_categories:
                 company_describtion = company_describtion.replace('\r', '')
                 
                 params.line += 1
-            #     # Insert it into MySQL table                
-            #     sql = f'INSERT INTO data(params.line_number, category_name, company_name, company_mail, company_phone, company_describtion)' \
-            #     f'VALUES ({params.line}, \'{category_name}\', \'{company_name}\', \'{company_mail}\', \'{company_phone}\', \'{company_describtion}\')'
-            #     sql_execute()
+                # if company_name != 'Автомобили, Авточасти':
+                #     # Insert it into MySQL table                
+                #     sql = f'INSERT INTO data(params.line_number, category_name, company_name, company_mail, company_phone, company_describtion)' \
+                #     f'VALUES ({params.line}, \'{category_name}\', \'{company_name}\', \'{company_mail}\', \'{company_phone}\', \'{company_describtion}\')'
+                #     sql_execute()
         
             except:
                 print(f'Error occured {company_name}')
             #     data.commit()
-            print(f'{category_link} | {category_name} | {company_name}')
+            
+            if company_name != 'Автомобили, Авточасти':
+                print(f'{category_link} | {category_name} | {company_name}')
         params.s_count += 1
     params.s_count = 0
     print(category_name)
