@@ -33,7 +33,7 @@ response = requests.get(url, verify=False)
 # Loop over all CATEGORIES URLs
 for category in categories.list_all_categories:
     category_link = function.links(category)
-    function.request_status(category_link)
+    response = function.request_status(category_link)
     
     # Loop over each page for a given category untill face status != 200
     while response.status_code == 200:
