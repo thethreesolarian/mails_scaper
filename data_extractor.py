@@ -22,7 +22,7 @@ import urllib3
 #     cursor.execute(sql)
 #     data.commit()
 #     cursor.close()
-
+ 
 # Handling SSL and verification errors
 ###################################
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
