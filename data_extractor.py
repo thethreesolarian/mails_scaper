@@ -8,20 +8,20 @@ import re
 import requests
 import urllib3
 
-# # Databse
-# data = mysql.connector.connect(
-#   host="localhost",
-#   user="data_any",
-#   password="data_123!@#",
-#   database="mails",
-#   port = "41063"
-# )
+# Databse
+data = mysql.connector.connect(
+  host="localhost",
+  user="data_any",
+  password="data_123!@#",
+  database="mails",
+  port = "41063"
+)
 
-# def sql_execute():
-#     cursor = data.cursor()
-#     cursor.execute(sql)
-#     data.commit()
-#     cursor.close()
+def sql_execute():
+    cursor = data.cursor()
+    cursor.execute(sql)
+    data.commit()
+    cursor.close()
 
 # Handling SSL and verification errors
 ###################################
@@ -33,7 +33,7 @@ response = requests.get(url, verify=False)
 # Loop over all CATEGORIES URLs
 for category in categories.list_all_categories:
     category_link = function.links(category)
-    function.request_status(category_link)
+    response = function.request_status(category_link)
     
     # Loop over each page for a given category untill face status != 200
     while response.status_code == 200:
@@ -88,18 +88,15 @@ for category in categories.list_all_categories:
                 company_describtion = company_describtion.replace('\r', '')
                 
                 params.line += 1
-            #     # Insert it into MySQL table                
-            #     sql = f'INSERT INTO data(params.line_number, category_name, company_name, company_mail, company_phone, company_describtion)' \
-            #     f'VALUES ({params.line}, \'{category_name}\', \'{company_name}\', \'{company_mail}\', \'{company_phone}\', \'{company_describtion}\')'
-            #     sql_execute()
+                # Insert it into MySQL table                
+                sql = f'INSERT INTO data(line_number, category_name, company_name, company_mail, company_phone, company_describtion)' \
+                f'VALUES ({params.line}, \'{category_name}\', \'{company_name}\', \'{company_mail}\', \'{company_phone}\', \'{company_describtion}\')'
+                sql_execute()
         
             except:
                 print(f'Error occured {company_name}')
-            #     data.commit()
-            print(f'{category_link} | {category_name} | {company_name}')
+                data.commit()
+            print(f'{params.line} --> {category_link} | {category_name} | {company_name}')
         params.s_count += 1
     params.s_count = 0
-    print(category_name)
-    print(params.line)
-
     
