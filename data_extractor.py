@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup
 import categories
 import function
 import mysql.connector
+import os
 import params
 import re
 import requests
@@ -89,8 +90,8 @@ for category in categories.list_all_categories:
                 
                 params.line += 1
                 # Insert it into MySQL table                
-                sql = f'INSERT INTO data(line_number, category_name, company_name, company_mail, company_phone, company_describtion)' \
-                f'VALUES ({params.line}, \'{category_name}\', \'{company_name}\', \'{company_mail}\', \'{company_phone}\', \'{company_describtion}\')'
+                sql = f'INSERT INTO data(category_name, company_name, company_mail, company_phone, company_describtion)' \
+                f'VALUES (\'{category_name}\', \'{company_name}\', \'{company_mail}\', \'{company_phone}\', \'{company_describtion}\')'
                 sql_execute()
         
             except:
@@ -98,5 +99,11 @@ for category in categories.list_all_categories:
                 data.commit()
             print(f'{params.line} --> {category_link} | {category_name} | {company_name}')
         params.s_count += 1
+        params.pause_count += 1
+        
+        if params.pause_count == 1000:
+            for seconds in range(600):
+                os.system('sleep 1')
+                print(f'Please wait {60 - seconds} seconds', end='\r')
+                params.pause_count = 0
     params.s_count = 0
-    
