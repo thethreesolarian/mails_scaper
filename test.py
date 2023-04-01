@@ -8,11 +8,11 @@ def fun_2(x, z):
     
     return n
 
-s = 4
-d = 1
+s = None
+d = None
 
 c = fun_1(s, d)
 print(type(c))
-print(c[0])
+print(c[1])
 
 # fun_2()

@@ -9,45 +9,49 @@ import re
 import requests
 import urllib3
 
-# Databse
-data = mysql.connector.connect(
-  host="localhost",
-  user="data_any",
-  password="data_123!@#",
-  database="mails",
-  port = "41063"
-)
+# # Databse
+# data = mysql.connector.connect(
+#   host="localhost",
+#   user="data_any",
+#   password="data_123!@#",
+#   database="mails",
+#   port = "41063"
+# )
 
-def sql_execute():
-    cursor = data.cursor()
-    cursor.execute(sql)
-    data.commit()
-    cursor.close()
+# def sql_execute():
+#     cursor = data.cursor()
+#     cursor.execute(sql)
+#     data.commit()
+#     cursor.close()
 
 # Handling SSL and verification errors
 ###################################
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 url = categories.list_all_categories[0].replace('/*/', '/')
-response = requests.get(url, verify=False)
+# response = requests.get(url, verify=False)
 ###################################
 
 # Loop over all CATEGORIES URLs
 for category in categories.list_all_categories:
-    category_link = function.links(category)
-    response = function.request_status(category_link)
+    
+    verified = True
+    # link = function.links(category, verified)
+    # verified = link[1]
+    # current_url = link[0]
     
     # Loop over each page for a given category untill face status != 200
-    while response.status_code == 200:
-        if params.s_count > 0:
-            category_link = function.links(category)
-            response = function.request_status(category_link)
-            
-            # If the given category_link (URL) returns != 200, go to the main loop
-            if response.status_code != 200:
-                break
+    while verified:
+
+        link = function.links(category, verified)
+        current_url = link[0]
+        verified = link[1]
+        
+        # If the given category_link (URL) returns != 200, go to the main loop
+        if verified == False:
+            break
         
         # Get the content of the web page as a string
-        response = function.request_status(category_link)
+        response = requests.get(current_url, timeout=2, verify=False, allow_redirects=False)
         text = BeautifulSoup(response.content, 'html.parser')
         text = str(response.text)
 
@@ -90,20 +94,20 @@ for category in categories.list_all_categories:
                 
                 params.line += 1
                 # Insert it into MySQL table                
-                sql = f'INSERT INTO data(category_name, company_name, company_mail, company_phone, company_describtion)' \
-                f'VALUES (\'{category_name}\', \'{company_name}\', \'{company_mail}\', \'{company_phone}\', \'{company_describtion}\')'
-                sql_execute()
+                # sql = f'INSERT INTO data(category_name, company_name, company_mail, company_phone, company_describtion)' \
+                # f'VALUES (\'{category_name}\', \'{company_name}\', \'{company_mail}\', \'{company_phone}\', \'{company_describtion}\')'
+                # sql_execute()
         
             except:
                 print(f'Error occured {company_name}')
-                data.commit()
-            print(f'{params.line} --> {category_link} | {category_name} | {company_name}')
+                # data.commit()
+            print(f'{params.line} --> {current_url} | {category_name} | {company_name}')
         params.s_count += 1
         params.pause_count += 1
         
         if params.pause_count == 1000:
             for seconds in range(600):
                 os.system('sleep 1')
-                print(f'Please wait {60 - seconds} seconds', end='\r')
+                print(f'Please wait {600 - seconds} seconds', end='\r')
                 params.pause_count = 0
     params.s_count = 0
